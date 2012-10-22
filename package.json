@@ -12,8 +12,7 @@
   },
   "keywords": [
     "csv",
-    "parser",
-    "sync"
+    "parser"
   ],
   "author": "Olivier Lalonde <olalonde@gmail.com>",
   "license": "BSD"
