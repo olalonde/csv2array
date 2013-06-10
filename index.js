@@ -33,6 +33,7 @@ function CSVToArray( strData, strDelimiter ){
   // matching groups.
   var arrMatches = null;
 
+  if(strData.length == 0) return (arrData);
 
   // Keep looping over the regular expression matches
   // until we can no longer find a match.
