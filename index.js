@@ -42,7 +42,8 @@ RegExp.escape= function(s) {
     defaults: {
       separator:',',
       delimiter:'"',
-      headers:true
+      headers:true,
+      skipwhitespace:false
     },
 
     hooks: {
@@ -70,6 +71,7 @@ RegExp.escape= function(s) {
         // cache settings
         var separator = options.separator;
         var delimiter = options.delimiter;
+        var skipwhitespace = options.skipwhitespace;
 
         // set initial state if it's missing
         if(!options.state.rowNum) {
@@ -170,6 +172,10 @@ RegExp.escape= function(s) {
                 endOfValue();
                 break;
               }
+              // ignore whitespace
+              if (skipwhitespace && m0 === ' ') {
+                break;
+              }
               // opening delimiter
               if (m0 === delimiter) {
                 state = 1;
@@ -245,6 +251,7 @@ RegExp.escape= function(s) {
               if (/^\r$/.test(m0)) {
                 break;
               }
+
               if (m0 === delimiter) {
               // non-compliant data
                 throw new Error('CSVDataError: Illegal Quote [Row:' + options.state.rowNum + '][Col:' + options.state.colNum + ']');
@@ -450,6 +457,7 @@ RegExp.escape= function(s) {
         // cache settings
         var separator = options.separator;
         var delimiter = options.delimiter;
+        var skipwhitespace = options.skipwhitespace;
         
         // set initial state if it's missing
         if(!options.state.rowNum) {
@@ -644,12 +652,14 @@ RegExp.escape= function(s) {
       config.callback = ((callback !== undefined && typeof(callback) === 'function') ? callback : false);
       config.separator = 'separator' in options ? options.separator : $.csv.defaults.separator;
       config.delimiter = 'delimiter' in options ? options.delimiter : $.csv.defaults.delimiter;
+      config.skipwhitespace = 'skipwhitespace' in options ? options.skipwhitespace : $.csv.defaults.skipwhitespace;
       
       // setup
       var data = [];
       var options = {
         delimiter: config.delimiter,
         separator: config.separator,
+        skipwhitespace: config.skipwhitespace,
         onParseEntry: options.onParseEntry,
         onParseValue: options.onParseValue,
         start: options.start,

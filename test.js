@@ -1,7 +1,10 @@
 var csv = require('./index');
 
-var str = '"aaaa","bbbb"\n"ccc", "dddd"';
+var str = '"aa aa","bbb  b"\n"ccc","ddd d"';
 
+var strwhitespace = '"aaaa", "bb bb"\n"c  cc", "dddd"';
 console.log(str);
 
-csv(str, { delimiter: '"' });
+console.log(csv(str, { delimiter: '"' }));
+
+console.log(csv(strwhitespace, { skipwhitespace: true }));
