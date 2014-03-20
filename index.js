@@ -1,87 +1,48 @@
-module.exports = CSVToArray;
+var CSV = {
+  parse: function(csv, reviver) {
+      reviver = reviver || function(r, c, v) { return v; };
+      var chars = csv.split(''), c = 0, cc = chars.length, start, end, table = [], row;
+      while (c < cc) {
+          table.push(row = []);
+          while (c < cc && '\r' !== chars[c] && '\n' !== chars[c]) {
+              start = end = c;
+              if ('"' === chars[c]){
+                  start = end = ++c;
+                  while (c < cc) {
+                      if ('"' === chars[c]) {
+                          if ('"' !== chars[c+1]) { break; }
+                          else { chars[++c] = ''; } // unescape ""
+                      }
+                      end = ++c;
+                  }
+                  if ('"' === chars[c]) { ++c; }
+                  while (c < cc && '\r' !== chars[c] && '\n' !== chars[c] && ',' !== chars[c]) { ++c; }
+              } else {
+                  while (c < cc && '\r' !== chars[c] && '\n' !== chars[c] && ',' !== chars[c]) { end = ++c; }
+              }
+              row.push(reviver(table.length-1, row.length, chars.slice(start, end).join('')));
+              if (',' === chars[c]) { ++c; }
+          }
+          if ('\r' === chars[c]) { ++c; }
+          if ('\n' === chars[c]) { ++c; }
+      }
+      return table;
+  },
 
-// @see http://stackoverflow.com/questions/1293147/javascript-code-to-parse-csv-data
-// This will parse a delimited string into an array of
-// arrays. The default delimiter is the comma, but this
-// can be overriden in the second argument.
-function CSVToArray( strData, strDelimiter ){
-  // Check to see if the delimiter is defined. If not,
-  // then default to comma.
-  strDelimiter = (strDelimiter || ",");
-
-  // Create a regular expression to parse the CSV values.
-  var objPattern = new RegExp(
-    (
-      // Delimiters.
-      "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
-
-      // Quoted fields.
-      "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
-
-      // Standard fields.
-      "([^\"\\" + strDelimiter + "\\r\\n]*))"
-  ),
-  "gi"
-  );
-
-
-  // Create an array to hold our data. Give the array
-  // a default empty first row.
-  var arrData = [[]];
-
-  // Create an array to hold our individual pattern
-  // matching groups.
-  var arrMatches = null;
-
-
-  // Keep looping over the regular expression matches
-  // until we can no longer find a match.
-  while (arrMatches = objPattern.exec( strData )){
-
-    // Get the delimiter that was found.
-    var strMatchedDelimiter = arrMatches[ 1 ];
-
-    // Check to see if the given delimiter has a length
-    // (is not the start of string) and if it matches
-    // field delimiter. If id does not, then we know
-    // that this delimiter is a row delimiter.
-    if (
-      strMatchedDelimiter.length &&
-        (strMatchedDelimiter != strDelimiter)
-    ){
-
-      // Since we have reached a new row of data,
-      // add an empty row to our data array.
-      arrData.push( [] );
-
-    }
-
-
-    // Now that we have our delimiter out of the way,
-    // let's check to see which kind of value we
-    // captured (quoted or unquoted).
-    if (arrMatches[ 2 ]){
-
-      // We found a quoted value. When we capture
-      // this value, unescape any double quotes.
-      var strMatchedValue = arrMatches[ 2 ].replace(
-        new RegExp( "\"\"", "g" ),
-        "\""
-      );
-
-    } else {
-
-      // We found a non-quoted value.
-      var strMatchedValue = arrMatches[ 3 ];
-
-    }
-
-
-    // Now that we have our value string, let's add
-    // it to the data array.
-    arrData[ arrData.length - 1 ].push( strMatchedValue );
+  stringify: function(table, replacer) {
+      replacer = replacer || function(r, c, v) { return v; };
+      var csv = '', c, cc, r, rr = table.length, cell;
+      for (r = 0; r < rr; ++r) {
+          if (r) { csv += '\r\n'; }
+          for (c = 0, cc = table[r].length; c < cc; ++c) {
+              if (c) { csv += ','; }
+              cell = replacer(r, c, table[r][c]);
+              if (/[,\r\n"]/.test(cell)) { cell = '"' + cell.replace(/"/g, '""') + '"'; }
+              csv += (cell || 0 === cell) ? cell : '';
+          }
+      }
+      return csv;
   }
+};
 
-  // Return the parsed data.
-  return( arrData );
-}
+module.exports = CSV.parse;
